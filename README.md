@@ -1,8 +1,8 @@
 # Aplikasi Bank Sampah Digital (PHP Native - Gratis & Open Source)
 
 **Demo Screenshot:**  
-*(Ganti URL di bawah ini dengan link screenshot aplikasi Anda)*  
-`[Tautan Screenshot di sini]`
+
+`[https://raw.githubusercontent.com/digitalninjanv/hosting_image/refs/heads/main/bank%20sampah/Screenshot%202025-11-13%20060241.png]`
 
 ---
 
