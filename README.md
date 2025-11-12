@@ -1,10 +1,18 @@
 # Aplikasi Bank Sampah Digital (PHP Native - Gratis & Open Source)
 
-**Demo Screenshot:**  
+![Preview Aplikasi](https://raw.githubusercontent.com/digitalninjanv/hosting_image/refs/heads/main/bank%20sampah/Screenshot%202025-11-13%20060241.png)
 
-`[https://raw.githubusercontent.com/digitalninjanv/hosting_image/refs/heads/main/bank%20sampah/Screenshot%202025-11-13%20060241.png]`
 
----
+
+## Demo Aplikasi
+
+Anda dapat mencoba versi demo aplikasi secara langsung di tautan berikut:
+
+**Demo URL:** [https://digitalninja.serv00.net/gem/](https://digitalninja.serv00.net/gem/)  
+**Login Admin:**  
+- Username: `admin`  
+- Password: `admin123`
+
 
 ## Deskripsi Umum
 
