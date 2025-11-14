@@ -1,0 +1,277 @@
+/* Reset dasar & Font Global */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f7f6; /* Warna latar belakang yang lembut */
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px 0; /* Padding atas bawah body */
+}
+
+.container {
+    width: 90%;
+    max-width: 800px; /* Lebar maksimal container */
+    margin: 0 auto; /* Auto margin untuk tengahkan container jika lebar layar > max-width */
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Bayangan yang lebih halus */
+    overflow: hidden; /* Agar border-radius bekerja dengan baik pada elemen anak */
+}
+
+/* Header */
+.main-header {
+    background: linear-gradient(135deg, #4CAF50, #2E8B57); /* Gradien hijau modern */
+    color: #ffffff;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.main-header .logo h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.main-header .logo p {
+    font-size: 1em;
+    font-weight: 300;
+}
+
+/* Area Konten Utama */
+.content-area {
+    padding: 30px;
+}
+
+.cek-saldo-card {
+    text-align: center;
+}
+
+.cek-saldo-card h2 {
+    font-size: 1.8em;
+    color: #2E8B57; /* Warna hijau tua yang konsisten */
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.cek-saldo-card .subtitle {
+    font-size: 0.95em;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+/* Form Styling */
+.cek-saldo-form .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.cek-saldo-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #444;
+}
+
+.cek-saldo-form input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cek-saldo-form input[type="text"]:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    outline: none;
+}
+
+.btn-submit {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-block; /* Agar bisa ditengahkan jika perlu */
+}
+
+.btn-submit:hover {
+    background-color: #388E3C; /* Warna hijau lebih gelap saat hover */
+    transform: translateY(-2px); /* Efek sedikit terangkat */
+}
+
+/* Hasil Pencarian */
+.hasil-pencarian {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    text-align: left;
+}
+
+.hasil-pencarian .placeholder-text {
+    color: #777;
+    font-style: italic;
+    text-align:center;
+}
+
+.info-nasabah h3 {
+    color: #2E8B57;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 5px;
+}
+
+.info-nasabah p {
+    margin-bottom: 8px;
+    font-size: 1em;
+}
+.info-nasabah p.saldo {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #D32F2F; /* Warna berbeda untuk saldo, misal merah atau oranye */
+}
+.info-nasabah.error {
+    color: #D32F2F;
+    font-weight: bold;
+    text-align: center;
+}
+
+
+.riwayat-transaksi h4 {
+    color: #2E8B57;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.riwayat-transaksi table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.riwayat-transaksi th, .riwayat-transaksi td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.riwayat-transaksi th {
+    background-color: #e9f5e9; /* Hijau muda untuk header tabel */
+    font-weight: 600;
+}
+
+.riwayat-transaksi tbody tr:nth-child(even) {
+    background-color: #fdfdfd;
+}
+
+/* Footer */
+.main-footer {
+    background-color: #333;
+    color: #f4f7f6;
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9em;
+}
+
+/* Responsifitas */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        margin: 20px auto; /* Margin atas bawah untuk mobile */
+    }
+
+    .main-header .logo h1 {
+        font-size: 2em;
+    }
+
+    .cek-saldo-card h2 {
+        font-size: 1.5em;
+    }
+
+    .btn-submit {
+        width: 100%; /* Tombol full width di mobile */
+        padding: 15px;
+    }
+
+    .riwayat-transaksi table {
+        font-size: 0.8em; /* Kecilkan font tabel di mobile */
+    }
+    .riwayat-transaksi th, .riwayat-transaksi td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-header {
+        padding: 20px 15px;
+    }
+    .main-header .logo h1 {
+        font-size: 1.8em;
+    }
+    .content-area {
+        padding: 20px;
+    }
+    .cek-saldo-card .subtitle {
+        font-size: 0.9em;
+    }
+    .riwayat-transaksi table { /* Membuat tabel lebih responsif */
+        display: block;
+        overflow-x: auto; /* Scroll horizontal untuk tabel */
+        white-space: nowrap;
+    }
+}
+
+/* ... (CSS yang sudah ada sebelumnya) ... */
+
+/* Styling untuk jenis transaksi */
+.jenis-setor {
+    background-color: #e6ffed; /* Hijau muda */
+    color: #006400; /* Hijau tua */
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+
+.jenis-tarik {
+    background-color: #ffeeee; /* Merah muda */
+    color: #c00; /* Merah tua */
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+
+/* Styling untuk nominal positif/negatif di tabel */
+.text-hijau {
+    color: #006400; /* Hijau tua */
+    font-weight: bold;
+}
+.text-merah {
+    color: #c00; /* Merah tua */
+    font-weight: bold;
+}
+
+/* Pastikan placeholder-text tersembunyi jika ada hasil, atau sebaliknya */
+.hasil-pencarian:not(:empty) + .placeholder-text {
+    display: none;
+}
+/* Jika menggunakan PHP untuk manage display placeholder, baris di atas mungkin tidak terlalu dibutuhkan */

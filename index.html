@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Saldo - Bank Sampah Kampung Anda</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <div class="logo">
+                <h1>Bank Sampah</h1>
+                <p>Kampung Kita Sejahtera</p>
+            </div>
+        </header>
+
+        <main class="content-area">
+            <section class="cek-saldo-card">
+                <h2>Cek Saldo & Riwayat Transaksi Anda</h2>
+                <p class="subtitle">Masukkan ID Nasabah Anda untuk melihat detail.</p>
+
+                <form method="GET" action="index.php" class="cek-saldo-form">
+                    <div class="form-group">
+                        <label for="id_nasabah">ID Nasabah</label>
+                        <input type="text" id="id_nasabah" name="id_nasabah" placeholder="Contoh: BS001" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Cek Sekarang</button>
+                </form>
+
+                <?php
+// --- AWAL BLOK PHP (LOGIKA PENCARIAN DATA) ---
+require_once 'config.php'; // Memuat koneksi DB dan pengaturan lain
+require_once 'functions.php'; // Memuat fungsi-fungsi yang sudah kita buat
+
+$dataNasabah = null;
+$saldoNasabah = 0;
+$riwayatTransaksi = [];
+$id_nasabah_input = ''; // Untuk menyimpan input ID nasabah
+
+if (isset($_GET['id_nasabah']) && !empty(trim($_GET['id_nasabah']))) {
+    $id_nasabah_input = trim($_GET['id_nasabah']);
+
+    // 1. Dapatkan Info Nasabah
+    $nasabahInfo = getNasabahInfo($conn, $id_nasabah_input);
+
+    if ($nasabahInfo) {
+        $dataNasabah = $nasabahInfo; // Simpan info dasar nasabah
+
+        // 2. Hitung Saldo Nasabah
+        $saldoNasabah = hitungSaldoNasabah($conn, $id_nasabah_input);
+
+        // 3. Dapatkan Riwayat Transaksi
+        $riwayatTransaksi = getRiwayatTransaksi($conn, $id_nasabah_input);
+
+    } else {
+        // Jika nasabahInfo null, berarti nasabah tidak ditemukan
+        $dataNasabah = false; // Tandai bahwa data tidak ditemukan
+    }
+}
+// --- AKHIR BLOK PHP ---
+?>
+
+<div class="hasil-pencarian" id="hasilPencarian">
+    <?php if ($dataNasabah === null && empty($id_nasabah_input)): // Belum ada pencarian ?>
+        <p class="placeholder-text">Hasil pencarian akan ditampilkan di sini.</p>
+    <?php elseif ($dataNasabah === false): // Nasabah tidak ditemukan ?>
+        <p class="info-nasabah error">Data nasabah dengan ID '<?php echo htmlspecialchars($id_nasabah_input); ?>' tidak ditemukan.</p>
+    <?php elseif ($dataNasabah): // Nasabah ditemukan, tampilkan data ?>
+        <div class="info-nasabah">
+            <h3>Informasi Nasabah</h3>
+            <p><strong>ID Nasabah:</strong> <?php echo htmlspecialchars($dataNasabah['id_nasabah']); ?></p>
+            <p><strong>Nama:</strong> <?php echo htmlspecialchars($dataNasabah['nama_lengkap']); ?></p>
+            <p class="saldo"><strong>Saldo Saat Ini:</strong> <?php echo formatRupiah($saldoNasabah); ?></p>
+        </div>
+
+        <?php if (!empty($riwayatTransaksi)): ?>
+            <div class="riwayat-transaksi">
+                <h4>Riwayat Transaksi:</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Jenis</th>
+                            <th>Deskripsi</th>
+                            <th>Detail</th> <th>Nominal (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($riwayatTransaksi as $trx): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars(date('d M Y H:i', strtotime($trx['tanggal_transaksi']))); ?></td>
+                                <td>
+                                    <span class="jenis-<?php echo strtolower($trx['jenis_transaksi']); ?>">
+                                        <?php echo htmlspecialchars(ucfirst(strtolower($trx['jenis_transaksi']))); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo htmlspecialchars($trx['deskripsi']); ?></td>
+                                <td>
+                                    <?php if ($trx['jenis_transaksi'] == 'SETOR' && $trx['jumlah_kg'] > 0): ?>
+                                        <?php echo htmlspecialchars($trx['jumlah_kg']); ?> kg @ <?php echo formatRupiah($trx['harga_per_kg']); ?>
+                                    <?php elseif ($trx['jenis_transaksi'] == 'TARIK'): ?>
+                                        -
+                                    <?php endif; ?>
+                                </td>
+                                <td class="<?php echo ($trx['total_rupiah'] < 0) ? 'text-merah' : 'text-hijau'; ?>">
+                                    <?php echo formatRupiah($trx['total_rupiah']); ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <p>Belum ada riwayat transaksi untuk nasabah ini.</p>
+        <?php endif; ?>
+    <?php endif; ?>
+</div>
+            </section>
+        </main>
+
+        <footer class="main-footer">
+            <p>&copy; <?php echo date("Y"); ?> Bank Sampah Kampung Kita. Dibuat dengan ❤️.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Script sederhana untuk membuat hasil pencarian tetap terlihat jika ada parameter GET
+        // Anda bisa menambahkan validasi atau interaksi lain di sini jika perlu
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idNasabah = urlParams.get('id_nasabah');
+            if (idNasabah) {
+                // Jika ada ID nasabah di URL, pastikan area hasil pencarian terlihat
+                // dan placeholder tersembunyi. Ini sudah dihandle oleh PHP di atas,
+                // tapi bisa juga di-handle JS jika PHP dinonaktifkan atau untuk efek tambahan.
+            }
+        });
+    </script>
+</body>
+</html>
