@@ -1,0 +1,34 @@
+name: Unzip ZIP file automatically
+
+on:
+  push:
+    paths:
+      - "*.zip"
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install unzip
+        run: sudo apt-get install unzip
+
+      - name: Unzip file
+        run: |
+          for file in *.zip; do
+            unzip "$file" -d "unzipped"
+          done
+
+      - name: Commit extracted files
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          mv unzipped/* .
+          rm -rf unzipped
+          rm -f *.zip
+          git add .
+          git commit -m "Auto-unzipped ZIP file"
+          git push
