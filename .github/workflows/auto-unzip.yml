@@ -1,0 +1,72 @@
+name: Auto unzip (flatten) and remove zip files
+
+on:
+  push:
+    branches:
+      - main   # ganti kalau branch kamu bukan 'main'
+
+permissions:
+  contents: write
+
+jobs:
+  unzip_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Detect, unzip (flatten), and delete ZIP files
+        run: |
+          set -euo pipefail
+
+          echo "Scan semua file..."
+          mapfile -t candidates < <(find . -type f ! -path "./.git/*")
+
+          zips=()
+
+          # Deteksi file yang benar-benar ZIP berdasarkan MIME type
+          for f in "${candidates[@]}"; do
+            if file --mime-type "$f" | grep -q "application/zip"; then
+              zips+=("$f")
+            fi
+          done
+
+          if [ ${#zips[@]} -eq 0 ]; then
+            echo "Tidak ada ZIP ditemukan. Selesai."
+            exit 0
+          fi
+
+          shopt -s dotglob nullglob
+
+          for z in "${zips[@]}"; do
+            echo "=== Proses ZIP: $z ==="
+            dir=$(dirname "$z")
+            tempdir=$(mktemp -d)
+
+            echo "Unzip ke folder sementara: $tempdir"
+            unzip -o "$z" -d "$tempdir" >/dev/null
+
+            # Cek isi level teratas di dalam ZIP
+            entries=( "$tempdir"/* )
+
+            if [ ${#entries[@]} -eq 1 ] && [ -d "${entries[0]}" ]; then
+              echo "ZIP punya satu folder root (${entries[0]}), flatten isinya ke: $dir"
+              mv "${entries[0]}"/* "$dir"/
+            else
+              echo "ZIP punya banyak item di root, pindahkan semua ke: $dir"
+              mv "$tempdir"/* "$dir"/
+            fi
+
+            echo "Bersihkan folder sementara dan hapus ZIP"
+            rm -rf "$tempdir"
+            rm "$z"
+          done
+
+          echo "Selesai proses semua ZIP."
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: flatten unzip and remove zip files"
+          branch: main   # samakan dengan bagian on.push.branches
