@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Saldo - Bank Sampah Kampung Anda</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="main-header">
+            <div class="hero-grid">
+                <div>
+                    <span class="brand-mark"><i class="fas fa-leaf"></i> Bank Sampah</span>
+                    <h1 class="hero-title">Lacak saldo setoran sampah secara instan</h1>
+                    <p class="hero-subtitle">Masukkan ID nasabah untuk menampilkan saldo dan riwayat transaksi dalam tampilan yang ringan dan ramah perangkat mobile.</p>
+                    <div class="hero-pills">
+                        <span class="pill"><span class="dot"></span>Realtime saldo</span>
+                        <span class="pill"><span class="dot"></span>Riwayat terperinci</span>
+                        <span class="pill"><span class="dot"></span>Desain mobile-first</span>
+                    </div>
+                </div>
+                <div class="hero-card">
+                    <p class="text-sm">Tips cepat</p>
+                    <ul style="list-style: none; padding: 0; margin-top: 8px; color: rgba(226,232,240,0.9);">
+                        <li>• Gunakan ID unik (contoh: <strong>BS001</strong>).</li>
+                        <li>• Simpan ID di dompet digital Anda.</li>
+                        <li>• Hubungi petugas untuk pembaruan data.</li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-area">
+            <div class="panel-grid">
+                <section class="card intro-card">
+                    <h2>Bagaimana cara kerjanya?</h2>
+                    <p>Platform ini menampilkan profil nasabah, saldo terkini, dan daftar transaksi terakhir. Desain baru memudahkan pengecekan di layar kecil sekaligus tetap nyaman ketika dibuka di desktop.</p>
+                </section>
+
+                <section class="cek-saldo-card card">
+                    <h2>Cek saldo & riwayat Anda</h2>
+                    <p class="subtitle">Masukkan ID Nasabah untuk melihat detail.</p>
+
+                    <form method="GET" action="index.php" class="cek-saldo-form">
+                        <div class="form-group">
+                            <label for="id_nasabah">ID Nasabah</label>
+                            <input type="text" id="id_nasabah" name="id_nasabah" placeholder="Contoh: BS001" required>
+                        </div>
+                        <button type="submit" class="btn-submit">Cek Sekarang</button>
+                    </form>
+                </section>
+            </div>
+
+<?php
+// --- AWAL BLOK PHP (LOGIKA PENCARIAN DATA) ---
+require_once 'config.php'; // Memuat koneksi DB dan pengaturan lain
+require_once 'functions.php'; // Memuat fungsi-fungsi yang sudah kita buat
+
+$dataNasabah = null;
+$saldoNasabah = 0;
+$riwayatTransaksi = [];
+$id_nasabah_input = ''; // Untuk menyimpan input ID nasabah
+
+if (isset($_GET['id_nasabah']) && !empty(trim($_GET['id_nasabah']))) {
+    $id_nasabah_input = trim($_GET['id_nasabah']);
+
+    // 1. Dapatkan Info Nasabah
+    $nasabahInfo = getNasabahInfo($conn, $id_nasabah_input);
+
+    if ($nasabahInfo) {
+        $dataNasabah = $nasabahInfo; // Simpan info dasar nasabah
+
+        // 2. Hitung Saldo Nasabah
+        $saldoNasabah = hitungSaldoNasabah($conn, $id_nasabah_input);
+
+        // 3. Dapatkan Riwayat Transaksi
+        $riwayatTransaksi = getRiwayatTransaksi($conn, $id_nasabah_input);
+
+    } else {
+        // Jika nasabahInfo null, berarti nasabah tidak ditemukan
+        $dataNasabah = false; // Tandai bahwa data tidak ditemukan
+    }
+}
+// --- AKHIR BLOK PHP ---
+?>
+            <section class="card hasil-pencarian" id="hasilPencarian">
+                <?php if ($dataNasabah === null && empty($id_nasabah_input)): // Belum ada pencarian ?>
+                    <p class="placeholder-text">Hasil pencarian akan ditampilkan di sini.</p>
+                <?php elseif ($dataNasabah === false): // Nasabah tidak ditemukan ?>
+                    <p class="info-nasabah error">Data nasabah dengan ID '<?php echo htmlspecialchars($id_nasabah_input); ?>' tidak ditemukan.</p>
+                <?php elseif ($dataNasabah): // Nasabah ditemukan, tampilkan data ?>
+                    <div class="info-nasabah">
+                        <h3>Informasi Nasabah</h3>
+                        <p><strong>ID Nasabah:</strong> <?php echo htmlspecialchars($dataNasabah['id_nasabah']); ?></p>
+                        <p><strong>Nama:</strong> <?php echo htmlspecialchars($dataNasabah['nama_lengkap']); ?></p>
+                        <p class="saldo"><strong>Saldo Saat Ini:</strong> <?php echo formatRupiah($saldoNasabah); ?></p>
+                    </div>
+
+                    <?php if (!empty($riwayatTransaksi)): ?>
+                        <div class="riwayat-transaksi">
+                            <h4>Riwayat Transaksi:</h4>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Jenis</th>
+                                            <th>Deskripsi</th>
+                                            <th>Detail</th> <th>Nominal (Rp)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($riwayatTransaksi as $trx): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars(date('d M Y H:i', strtotime($trx['tanggal_transaksi']))); ?></td>
+                                                <td>
+                                                    <span class="jenis-<?php echo strtolower($trx['jenis_transaksi']); ?>">
+                                                        <?php echo htmlspecialchars(ucfirst(strtolower($trx['jenis_transaksi']))); ?>
+                                                    </span>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($trx['deskripsi']); ?></td>
+                                                <td>
+                                                    <?php if ($trx['jenis_transaksi'] == 'SETOR' && $trx['jumlah_kg'] > 0): ?>
+                                                        <?php echo htmlspecialchars($trx['jumlah_kg']); ?> kg @ <?php echo formatRupiah($trx['harga_per_kg']); ?>
+                                                    <?php elseif ($trx['jenis_transaksi'] == 'TARIK'): ?>
+                                                        -
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="<?php echo ($trx['total_rupiah'] < 0) ? 'text-merah' : 'text-hijau'; ?>">
+                                                    <?php echo formatRupiah($trx['total_rupiah']); ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <p>Belum ada riwayat transaksi untuk nasabah ini.</p>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </section>
+        </main>
+
+        <footer class="main-footer">
+            <p>&copy; <?php echo date("Y"); ?> Bank Sampah Kampung Kita. Dibuat dengan ❤️.</p>
+        </footer>
+    </div>
+</body>
+</html>
