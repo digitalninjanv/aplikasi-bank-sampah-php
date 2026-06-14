@@ -35,10 +35,19 @@ CREATE TABLE `pengguna` (
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `level` enum('admin','petugas','warga') NOT NULL,
+  `status` enum('aktif','nonaktif') NOT NULL DEFAULT 'aktif',
   `alamat` text DEFAULT NULL,
   `no_telepon` varchar(15) DEFAULT NULL COMMENT 'Digunakan untuk cek info publik warga',
+  `foto` varchar(255) DEFAULT NULL,
   `saldo` decimal(10,2) DEFAULT 0.00,
-  `tanggal_daftar` timestamp NOT NULL DEFAULT current_timestamp()
+  `last_login` timestamp NULL DEFAULT NULL,
+  `login_attempts` tinyint(4) NOT NULL DEFAULT 0,
+  `locked_until` timestamp NULL DEFAULT NULL,
+  `reset_token` varchar(64) DEFAULT NULL,
+  `reset_expires` timestamp NULL DEFAULT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `tanggal_daftar` timestamp NOT NULL DEFAULT current_timestamp(),
+  INDEX `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -49,11 +58,11 @@ CREATE TABLE `pengguna` (
 -- Password warga di-generate otomatis dan tidak digunakan untuk login.
 --
 
-INSERT INTO `pengguna` (`id_pengguna`, `nama_lengkap`, `username`, `password`, `level`, `alamat`, `no_telepon`, `saldo`) VALUES
-(1, 'Administrator Utama', 'admin', '$2y$10$OQ4wl7ky9pv./gSXpGdIKexnquBeYSOTr52XpZuVmlCS6L8fVoPDC', 'admin', 'Kantor Pusat', '081200000001', 0.00),
-(2, 'Petugas Lapangan 1', 'petugas1', '$2y$10$XhZh00u8Bn/k5kaEkhTkx..1fys3QgRuk180laSYH276qHg5hzh9m', 'petugas', 'Pos Petugas A', '081200000002', 0.00),
-(3, 'Budi Santoso', '081234567001', '$2y$10$3g.K0.jM4R5e.g8hL1j.K.uV0wX1eK.L3mN4oP5qR6sT7uV8wX9y', 'warga', 'Jl. Merdeka No. 10', '081234567001', 50000.00),
-(4, 'Siti Aminah', '081234567002', '$2y$10$9z.A1.bC2d.eF3g.H4i.J.kL5mN6oP7qR8sT9uV0wX1yZ2aB3c4D', 'warga', 'Jl. Pahlawan No. 5', '081234567002', 25000.00);
+INSERT INTO `pengguna` (`id_pengguna`, `nama_lengkap`, `username`, `password`, `level`, `status`, `alamat`, `no_telepon`, `saldo`) VALUES
+(1, 'Administrator Utama', 'admin', '$2y$10$OQ4wl7ky9pv./gSXpGdIKexnquBeYSOTr52XpZuVmlCS6L8fVoPDC', 'admin', 'aktif', 'Kantor Pusat', '081200000001', 0.00),
+(2, 'Petugas Lapangan 1', 'petugas1', '$2y$10$XhZh00u8Bn/k5kaEkhTkx..1fys3QgRuk180laSYH276qHg5hzh9m', 'petugas', 'aktif', 'Pos Petugas A', '081200000002', 0.00),
+(3, 'Budi Santoso', '081234567001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'warga', 'aktif', 'Jl. Merdeka No. 10', '081234567001', 50000.00),
+(4, 'Siti Aminah', '081234567002', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'warga', 'aktif', 'Jl. Pahlawan No. 5', '081234567002', 25000.00);
 
 -- --------------------------------------------------------
 
@@ -67,7 +76,9 @@ CREATE TABLE `jenis_sampah` (
   `nama_sampah` varchar(100) NOT NULL,
   `harga_per_kg` decimal(10,2) NOT NULL,
   `deskripsi` text DEFAULT NULL,
-  `satuan` varchar(10) DEFAULT 'kg'
+  `satuan` varchar(10) DEFAULT 'kg',
+  `status` enum('aktif','nonaktif') NOT NULL DEFAULT 'aktif',
+  INDEX `idx_jenis_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -131,6 +142,59 @@ INSERT INTO `detail_setoran` (`id_detail_setoran`, `id_transaksi_setor`, `id_jen
 (1, 1, 1, 1.50, 3000.00, 4500.00),
 (2, 1, 2, 2.00, 1500.00, 3000.00);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `log_aktivitas`
+--
+
+DROP TABLE IF EXISTS `log_aktivitas`;
+CREATE TABLE `log_aktivitas` (
+  `id_log` int(11) NOT NULL,
+  `id_pengguna` int(11) DEFAULT NULL,
+  `username` varchar(50) DEFAULT NULL,
+  `aksi` varchar(50) NOT NULL,
+  `tabel` varchar(50) DEFAULT NULL,
+  `id_record` int(11) DEFAULT NULL,
+  `detail` text DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `harga_history`
+--
+
+DROP TABLE IF EXISTS `harga_history`;
+CREATE TABLE `harga_history` (
+  `id_history` int(11) NOT NULL,
+  `id_jenis_sampah` int(11) NOT NULL,
+  `harga_lama` decimal(10,2) NOT NULL,
+  `harga_baru` decimal(10,2) NOT NULL,
+  `id_petugas` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `app_settings`
+--
+
+DROP TABLE IF EXISTS `app_settings`;
+CREATE TABLE `app_settings` (
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `app_settings` (`setting_key`, `setting_value`) VALUES
+('app_name', 'Bank Sampah Digital'),
+('app_address', ''),
+('app_phone', '');
+
 --
 -- Indexes for dumped tables
 --
@@ -166,6 +230,29 @@ ALTER TABLE `detail_setoran`
   ADD KEY `id_jenis_sampah` (`id_jenis_sampah`);
 
 --
+-- Indexes for table `log_aktivitas`
+--
+ALTER TABLE `log_aktivitas`
+  ADD PRIMARY KEY (`id_log`),
+  ADD KEY `idx_aksi` (`aksi`),
+  ADD KEY `idx_created` (`created_at`),
+  ADD KEY `idx_pengguna` (`id_pengguna`);
+
+--
+-- Indexes for table `harga_history`
+--
+ALTER TABLE `harga_history`
+  ADD PRIMARY KEY (`id_history`),
+  ADD KEY `idx_jenis` (`id_jenis_sampah`),
+  ADD KEY `idx_created` (`created_at`);
+
+--
+-- Indexes for table `app_settings`
+--
+ALTER TABLE `app_settings`
+  ADD PRIMARY KEY (`setting_key`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -192,6 +279,18 @@ ALTER TABLE `transaksi`
 --
 ALTER TABLE `detail_setoran`
   MODIFY `id_detail_setoran` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `log_aktivitas`
+--
+ALTER TABLE `log_aktivitas`
+  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `harga_history`
+--
+ALTER TABLE `harga_history`
+  MODIFY `id_history` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
