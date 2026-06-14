@@ -87,14 +87,13 @@ Aplikasi ini mencakup siklus penuh operasional bank sampah: **pendaftaran nasaba
 
 ## 🎬 Demonstrasi
 
+
 | Item | Detail |
-|------|--------|
-| **URL Demo** | [https://digitalninja.serv00.net/gem/](https://digitalninja.serv00.net/gem/) |
+| --- | --- |
+| **URL Demo** | [https://bankgentara.my.id/aplikasi-bank-sampah-php-main/](https://bankgentara.my.id/aplikasi-bank-sampah-php-main/) |
 | **Admin** | Username: `admin`, Password: `admin123` |
 | **Petugas** | Username: `petugas1`, Password: `petugas123` |
 | **Warga** | Login via aplikasi setelah registrasi |
-
----
 
 ## 📦 Panduan Instalasi
 
