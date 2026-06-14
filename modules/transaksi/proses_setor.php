@@ -1,6 +1,7 @@
 <?php
 // modules/transaksi/proses_setor.php
 check_user_level(['admin', 'petugas']);
+require_csrf();
 
 // Kondisi diubah: Cek metode POST dan keberadaan field utama seperti id_warga dan items,
 // karena submit programatik via JS tidak mengirimkan nama tombol submit.
@@ -114,6 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_warga']) && isset($
 
         mysqli_commit($koneksi);
         $_SESSION['success_message'] = "Setoran sampah berhasil dicatat dengan total nilai " . format_rupiah($total_nilai_keseluruhan) . ".";
+        log_aktivitas('Setor Sampah', 'transaksi', $id_transaksi_setor, "Warga ID: $id_warga, Total: " . format_rupiah($total_nilai_keseluruhan));
         $_SESSION['last_transaksi_id'] = $id_transaksi_setor;
         $_SESSION['last_transaksi_tipe'] = 'setor';
         redirect(BASE_URL . 'index.php?page=transaksi/setor');

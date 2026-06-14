@@ -5,24 +5,70 @@ date_default_timezone_set('Asia/Jakarta');
   
   
   // Pengaturan Database (Sesuaikan dengan detail database Anda di Serv00)
-define('DB_HOST', 'localhost'); // Biasanya 'localhost' atau alamat server DB dari Serv00
-define('DB_USER', 'root'); // Username database Anda
-define('DB_PASS', ''); // Password database Anda
+define('DB_HOST', '127.0.0.1'); // Force TCP (Unix socket has restricted permissions)
+define('DB_USER', 'banksampah'); // Username database Anda
+define('DB_PASS', 'banksampah'); // Password database Anda
 define('DB_NAME', 'db_banksampah'); // Nama database Anda
   
 
+// Nonaktifkan laporan error MySQL ke output
+mysqli_report(MYSQLI_REPORT_OFF);
+
 // Membuat Koneksi
-$koneksi = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+$koneksi = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
 if (!$koneksi) {
-    die("Koneksi database gagal: " . mysqli_connect_error());
+    error_log("Database connection failed: " . mysqli_connect_error());
+    die("Maaf, terjadi gangguan koneksi database. Silakan coba lagi nanti.");
 }
 
-define('BASE_URL', 'http://localhost/gem/'); 
+define('BASE_URL', 'https://resume-looks-chamber-nest.trycloudflare.com/'); 
+
+// Keamanan sesi
+ini_set('session.use_strict_mode', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_samesite', 'Lax');
+if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+    ini_set('session.cookie_secure', 1);
+}
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
+// Session timeout: 30 menit idle
+$session_timeout = 30 * 60;
+if (isset($_SESSION['user_id']) && isset($_SESSION['login_time'])) {
+    if (time() - $_SESSION['login_time'] > $session_timeout) {
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                !empty($params["secure"]), $params["httponly"]
+            );
+        }
+        session_destroy();
+        if (session_status() == PHP_SESSION_NONE) session_start();
+        $_SESSION['error_message'] = "Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan login kembali.";
+        header("Location: " . BASE_URL . "index.php?page=auth/login&pesan=timeout");
+        exit();
+    }
+    $_SESSION['login_time'] = time(); // Perbarui waktu aktivitas
+}
+
+// Load pengaturan aplikasi dari database
+$app_settings = [];
+$settings_query = @mysqli_query($koneksi, "SELECT setting_key, setting_value FROM app_settings");
+if ($settings_query) {
+    while ($s = mysqli_fetch_assoc($settings_query)) {
+        $app_settings[$s['setting_key']] = $s['setting_value'];
+    }
+}
+define('APP_NAME', $app_settings['app_name'] ?? 'Bank Sampah Digital');
+define('APP_ADDRESS', $app_settings['app_address'] ?? '');
+define('APP_PHONE', $app_settings['app_phone'] ?? '');
 
 function sanitize_input($data) {
     global $koneksi; 
@@ -93,6 +139,50 @@ function check_user_level($allowed_levels) {
         $_SESSION['error_message'] = "Anda tidak memiliki hak akses ke halaman ini.";
         redirect(BASE_URL . 'index.php?page=dashboard&pesan=akses_ditolak_level_cl_v3');
     }
+}
+
+// === CSRF Protection ===
+function generate_csrf_token() {
+    if (empty($_SESSION['_csrf_token'])) {
+        $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['_csrf_token'];
+}
+
+function verify_csrf_token($token) {
+    if (empty($_SESSION['_csrf_token']) || empty($token)) return false;
+    return hash_equals($_SESSION['_csrf_token'], $token);
+}
+
+function csrf_field() {
+    return '<input type="hidden" name="_csrf_token" value="' . htmlspecialchars(generate_csrf_token()) . '">';
+}
+
+function csrf_meta() {
+    return '<meta name="csrf-token" content="' . htmlspecialchars(generate_csrf_token()) . '">';
+}
+
+function require_csrf() {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $token = $_POST['_csrf_token'] ?? '';
+        if (!verify_csrf_token($token)) {
+            $_SESSION['error_message'] = 'Token keamanan tidak valid. Silakan coba lagi.';
+            $referer = $_SERVER['HTTP_REFERER'] ?? BASE_URL . 'index.php?page=dashboard';
+            redirect($referer);
+        }
+    }
+}
+
+// === Log Aktivitas ===
+function log_aktivitas($aksi, $tabel = null, $id_record = null, $detail = null) {
+    global $koneksi;
+    $id_pengguna = $_SESSION['user_id'] ?? null;
+    $username = $_SESSION['user_username'] ?? 'anonim';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $stmt = mysqli_prepare($koneksi, "INSERT INTO log_aktivitas (id_pengguna, username, aksi, tabel, id_record, detail, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "isssiss", $id_pengguna, $username, $aksi, $tabel, $id_record, $detail, $ip);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
 }
 
 function format_rupiah($angka) {

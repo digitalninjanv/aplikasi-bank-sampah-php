@@ -4,6 +4,7 @@
 // Tidak perlu require_once '../../config/database.php'; jika routing melalui index.php sudah benar.
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    require_csrf();
     // Pastikan $koneksi dan fungsi-fungsi dari config/database.php tersedia.
     // Jika tidak, berarti ada masalah dengan bagaimana file ini dipanggil.
     if (!isset($koneksi) || !function_exists('sanitize_input') || !function_exists('redirect')) {
@@ -21,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // exit() sudah ada di dalam fungsi redirect()
     }
 
-    $query = "SELECT id_pengguna, nama_lengkap, username, password, level FROM pengguna WHERE username = ?";
+    $query = "SELECT id_pengguna, nama_lengkap, username, password, level, status, login_attempts, locked_until FROM pengguna WHERE username = ?";
     $stmt = mysqli_prepare($koneksi, $query);
     
     if ($stmt) {
@@ -30,24 +31,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $result = mysqli_stmt_get_result($stmt);
 
         if ($user = mysqli_fetch_assoc($result)) {
+            // Cek status akun
+            if (isset($user['status']) && $user['status'] === 'nonaktif') {
+                mysqli_stmt_close($stmt);
+                $_SESSION['error_message'] = "Akun Anda telah dinonaktifkan. Hubungi administrator.";
+                redirect(BASE_URL . 'index.php?page=auth/login');
+            }
+
+            // Rate limit: cek locked_until
+            if (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
+                mysqli_stmt_close($stmt);
+                $_SESSION['error_message'] = "Akun terkunci karena terlalu banyak percobaan. Coba lagi nanti.";
+                redirect(BASE_URL . 'index.php?page=auth/login');
+            }
+
             // Verifikasi password
             if (password_verify($password, $user['password'])) {
-                // Login berhasil, pastikan sesi dimulai sebelum menulis ke dalamnya
+                // Login berhasil — reset rate limit + update last_login
+                mysqli_query($koneksi, "UPDATE pengguna SET login_attempts=0, locked_until=NULL, last_login=NOW() WHERE id_pengguna=" . (int)$user['id_pengguna']);
+
                 if (session_status() == PHP_SESSION_NONE) {
-                    // Ini sebagai fallback, idealnya sesi sudah dimulai di config/database.php atau index.php
                     session_start(); 
                 }
+
+                session_regenerate_id(true); // Cegah session fixation
 
                 $_SESSION['user_id'] = $user['id_pengguna'];
                 $_SESSION['user_nama'] = $user['nama_lengkap'];
                 $_SESSION['user_username'] = $user['username'];
                 $_SESSION['user_level'] = $user['level'];
-                $_SESSION['login_time'] = time(); // Tambahkan waktu login untuk manajemen sesi (opsional)
+                $_SESSION['login_time'] = time();
+
+                log_aktivitas('login', 'pengguna', $user['id_pengguna'], "Login berhasil");
 
                 // Redirect ke dashboard sesuai level
                 redirect(BASE_URL . 'index.php?page=dashboard&pesan=login_sukses');
             } else {
-                // Password salah
+                // Rate limit: increment attempts
+                $attempts = (int)$user['login_attempts'] + 1;
+                if ($attempts >= 5) {
+                    mysqli_query($koneksi, "UPDATE pengguna SET login_attempts=$attempts, locked_until=DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id_pengguna=" . (int)$user['id_pengguna']);
+                    log_aktivitas('login_locked', 'pengguna', $user['id_pengguna'], "Akun dikunci karena 5x gagal login");
+                } else {
+                    mysqli_query($koneksi, "UPDATE pengguna SET login_attempts=$attempts WHERE id_pengguna=" . (int)$user['id_pengguna']);
+                }
                 redirect(BASE_URL . 'index.php?page=auth/login&pesan=gagal');
             }
         } else {

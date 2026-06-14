@@ -1,6 +1,7 @@
 <?php
 // modules/warga/proses_simpan.php
-check_user_level(['admin', 'petugas']); 
+check_user_level(['admin', 'petugas']);
+require_csrf();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -63,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if (mysqli_stmt_execute($stmt_insert)) {
             $_SESSION['success_message'] = "Data warga baru berhasil ditambahkan. Username terdaftar: {$username}.";
+            log_aktivitas('Tambah Warga', 'pengguna', null, "Warga baru: $nama_lengkap, Username: $username");
         } else {
             $_SESSION['error_message'] = "Gagal menambahkan data warga: " . mysqli_stmt_error($stmt_insert);
             error_log("Error insert warga: " . mysqli_stmt_error($stmt_insert));
@@ -130,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if (mysqli_stmt_execute($stmt_update)) {
             $_SESSION['success_message'] = "Data warga berhasil diperbarui.";
+            log_aktivitas('Update Warga', 'pengguna', $id_pengguna, "Warga diperbarui");
         } else {
             $_SESSION['error_message'] = "Gagal memperbarui data warga: " . mysqli_stmt_error($stmt_update);
             error_log("Error update warga (ID: $id_pengguna): " . mysqli_stmt_error($stmt_update));

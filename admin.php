@@ -3,7 +3,6 @@
 session_start();
 
 require_once 'config.php';
-require_once 'functions.php';
 
 define('ADMIN_USERNAME', 'admin');
 define('ADMIN_PASSWORD', 'admin123');

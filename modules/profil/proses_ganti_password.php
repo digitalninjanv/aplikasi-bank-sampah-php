@@ -2,6 +2,7 @@
 // modules/profil/proses_ganti_password.php
 // Pastikan config/database.php sudah di-include oleh index.php
 check_user_level(['admin', 'petugas', 'warga']);
+require_csrf();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ganti_password'])) {
     $user_id = $_SESSION['user_id'];
@@ -43,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ganti_password'])) {
 
         if (mysqli_stmt_execute($stmt_update_pass)) {
             $_SESSION['success_message'] = "Password berhasil diganti. Silakan login kembali untuk keamanan.";
+            log_aktivitas('Ganti Password', 'pengguna', $user_id, "Password diganti");
             // Hancurkan sesi dan paksa login ulang
             session_unset();
             session_destroy();

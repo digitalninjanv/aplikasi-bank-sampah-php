@@ -1,0 +1,15 @@
+{
+    "name": "banksampah/app",
+    "description": "Bank Sampah Digital",
+    "type": "project",
+    "authors": [
+        {
+            "name": "digitalninjanv",
+            "email": "147027984+digitalninjanv@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "dompdf/dompdf": "^3.1",
+        "phpoffice/phpspreadsheet": "^5.8"
+    }
+}

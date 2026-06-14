@@ -11,6 +11,16 @@ $sql_file_path = 'banksampah.sql'; // Path ke file .sql Anda
 // --------------------------
 
 
+// Cegah re-instalasi jika database sudah berisi data
+$koneksi_cek = @new mysqli($db_host, $db_user, $db_pass, $db_name);
+if ($koneksi_cek && !$koneksi_cek->connect_error) {
+    $cek = $koneksi_cek->query("SELECT COUNT(*) AS cnt FROM pengguna");
+    if ($cek && $cek->fetch_assoc()['cnt'] > 0) {
+        die("Instalasi telah dilakukan sebelumnya. Hapus file install.php untuk keamanan.");
+    }
+    $koneksi_cek->close();
+}
+
 $output_messages = [];
 $success = false;
 

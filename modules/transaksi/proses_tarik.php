@@ -1,6 +1,7 @@
 <?php
 // modules/transaksi/proses_tarik.php
 check_user_level(['admin', 'petugas']);
+require_csrf();
 
 // Kondisi diubah: Cek metode POST dan keberadaan field utama seperti id_warga dan jumlah_penarikan
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_warga']) && isset($_POST['jumlah_penarikan'])) {
@@ -67,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id_warga']) && isset($
 
         mysqli_commit($koneksi);
         $_SESSION['success_message'] = "Penarikan saldo sebesar " . format_rupiah($jumlah_penarikan) . " berhasil dicatat.";
+        log_aktivitas('Tarik Saldo', 'transaksi', $id_transaksi_tarik, "Warga ID: $id_warga, Jumlah: " . format_rupiah($jumlah_penarikan));
         $_SESSION['last_transaksi_id'] = $id_transaksi_tarik;
         $_SESSION['last_transaksi_tipe'] = 'tarik_saldo';
         redirect(BASE_URL . 'index.php?page=transaksi/tarik_saldo');

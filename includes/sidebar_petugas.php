@@ -1,68 +1,49 @@
 <?php
-// includes/sidebar_petugas.php
-// Pastikan $current_page sudah didefinisikan di header.php
 $current_page = isset($current_page) ? $current_page : (isset($_GET['page']) ? $_GET['page'] : '');
 ?>
-<ul class="space-y-2">
-    <li>
-        <a href="<?php echo BASE_URL; ?>index.php?page=dashboard" 
-           class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-sky-600 transition duration-200 <?php echo ($current_page == 'dashboard') ? 'active-nav-link' : ''; ?>">
-            <i class="fas fa-tachometer-alt w-5"></i>
-            <span>Dashboard</span>
-        </a>
-    </li>
-    <li>
-        <a href="<?php echo BASE_URL; ?>index.php?page=warga/data" 
-           class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-sky-600 transition duration-200 <?php echo (strpos($current_page, 'warga/') === 0) ? 'active-nav-link' : ''; ?>">
-            <i class="fas fa-users w-5"></i>
-            <span>Data Warga</span>
-        </a>
-    </li>
-    <li>
-        <a href="<?php echo BASE_URL; ?>index.php?page=jenis_sampah/data" 
-           class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-sky-600 transition duration-200 <?php echo (strpos($current_page, 'jenis_sampah/') === 0) ? 'active-nav-link' : ''; ?>">
-            <i class="fas fa-dumpster w-5"></i>
-            <span>Jenis Sampah</span>
-        </a>
-    </li>
-    <li>
-        <a href="<?php echo BASE_URL; ?>index.php?page=transaksi/setor" 
-           class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-sky-600 transition duration-200 <?php echo ($current_page == 'transaksi/setor') ? 'active-nav-link' : ''; ?>">
-            <i class="fas fa-arrow-down-wide-short w-5"></i>
-            <span>Setor Sampah</span>
-        </a>
-    </li>
-    <li>
-        <a href="<?php echo BASE_URL; ?>index.php?page=transaksi/tarik_saldo" 
-           class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-sky-600 transition duration-200 <?php echo ($current_page == 'transaksi/tarik_saldo') ? 'active-nav-link' : ''; ?>">
-            <i class="fas fa-money-bill-wave w-5"></i>
-            <span>Tarik Saldo</span>
-        </a>
-    </li>
-    <li>
-        <a href="<?php echo BASE_URL; ?>index.php?page=transaksi/riwayat" 
-           class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-sky-600 transition duration-200 <?php echo ($current_page == 'transaksi/riwayat') ? 'active-nav-link' : ''; ?>">
-            <i class="fas fa-history w-5"></i>
-            <span>Riwayat Transaksi</span>
-        </a>
-    </li>
-    <li x-data="{ open: <?php echo (strpos($current_page, 'laporan/') === 0) ? 'true' : 'false'; ?> }">
-        <button @click="open = !open" class="w-full flex items-center justify-between space-x-3 px-4 py-3 rounded-lg hover:bg-sky-600 transition duration-200">
-            <div class="flex items-center space-x-3">
-                <i class="fas fa-chart-line w-5"></i>
-                <span>Laporan</span>
-            </div>
-            <i class="fas" :class="open ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
-        </button>
-        <ul x-show="open" x-transition class="ml-4 mt-1 space-y-1">
-            <li>
-                <a href="<?php echo BASE_URL; ?>index.php?page=laporan/harian" 
-                   class="block px-4 py-2 rounded-md hover:bg-sky-700 <?php echo ($current_page == 'laporan/harian') ? 'active-nav-link' : ''; ?>">Laporan Harian</a>
-            </li>
-            <li>
-                <a href="<?php echo BASE_URL; ?>index.php?page=laporan/bulanan" 
-                   class="block px-4 py-2 rounded-md hover:bg-sky-700 <?php echo ($current_page == 'laporan/bulanan') ? 'active-nav-link' : ''; ?>">Laporan Bulanan</a>
-            </li>
-        </ul>
-    </li>
-    </ul>
+<a href="<?php echo BASE_URL; ?>index.php?page=dashboard" class="nav-link <?php echo ($current_page == 'dashboard') ? 'active' : ''; ?>">
+    <i class="fas fa-tachometer-alt"></i>
+    <span>Dashboard</span>
+</a>
+<a href="<?php echo BASE_URL; ?>index.php?page=warga/data" class="nav-link <?php echo (strpos($current_page, 'warga/') === 0) ? 'active' : ''; ?>">
+    <i class="fas fa-users"></i>
+    <span>Data Warga</span>
+</a>
+<a href="<?php echo BASE_URL; ?>index.php?page=jenis_sampah/data" class="nav-link <?php echo (strpos($current_page, 'jenis_sampah/') === 0) ? 'active' : ''; ?>">
+    <i class="fas fa-dumpster"></i>
+    <span>Jenis Sampah</span>
+</a>
+<div class="pt-3 mt-3 border-t border-slate-800">
+    <p class="px-3 pb-1 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Transaksi</p>
+    <a href="<?php echo BASE_URL; ?>index.php?page=transaksi/setor" class="nav-link <?php echo ($current_page == 'transaksi/setor') ? 'active' : ''; ?>">
+        <i class="fas fa-arrow-down-wide-short"></i>
+        <span>Setor Sampah</span>
+    </a>
+    <a href="<?php echo BASE_URL; ?>index.php?page=transaksi/tarik_saldo" class="nav-link <?php echo ($current_page == 'transaksi/tarik_saldo') ? 'active' : ''; ?>">
+        <i class="fas fa-money-bill-wave"></i>
+        <span>Tarik Saldo</span>
+    </a>
+    <a href="<?php echo BASE_URL; ?>index.php?page=transaksi/riwayat" class="nav-link <?php echo ($current_page == 'transaksi/riwayat') ? 'active' : ''; ?>">
+        <i class="fas fa-history"></i>
+        <span>Riwayat Transaksi</span>
+    </a>
+</div>
+<div class="pt-3 mt-3 border-t border-slate-800">
+    <p class="px-3 pb-1 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Laporan</p>
+    <a href="<?php echo BASE_URL; ?>index.php?page=laporan/harian" class="nav-link <?php echo ($current_page == 'laporan/harian') ? 'active' : ''; ?>">
+        <i class="fas fa-calendar-day"></i>
+        <span>Laporan Harian</span>
+    </a>
+    <a href="<?php echo BASE_URL; ?>index.php?page=laporan/bulanan" class="nav-link <?php echo ($current_page == 'laporan/bulanan') ? 'active' : ''; ?>">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Laporan Bulanan</span>
+    </a>
+    <a href="<?php echo BASE_URL; ?>index.php?page=laporan/rekap_warga" class="nav-link <?php echo ($current_page == 'laporan/rekap_warga') ? 'active' : ''; ?>">
+        <i class="fas fa-file-contract"></i>
+        <span>Rekap Warga</span>
+    </a>
+    <a href="<?php echo BASE_URL; ?>index.php?page=laporan/export_pdf" class="nav-link <?php echo ($current_page == 'laporan/export_pdf') ? 'active' : ''; ?>">
+        <i class="fas fa-file-pdf"></i>
+        <span>Export PDF</span>
+    </a>
+</div>

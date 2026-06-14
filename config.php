@@ -2,9 +2,9 @@
 // config.php
 
 // Pengaturan Database (Sesuaikan dengan detail database Anda di Serv00)
-define('DB_HOST', 'localhost'); // Biasanya 'localhost' atau alamat server DB dari Serv00
-define('DB_USER', 'root'); // Username database Anda
-define('DB_PASS', ''); // Password database Anda
+define('DB_HOST', '127.0.0.1'); // Force TCP (Unix socket has restricted permissions)
+define('DB_USER', 'banksampah'); // Username database Anda
+define('DB_PASS', 'banksampah'); // Password database Anda
 define('DB_NAME', 'db_banksampah'); // Nama database Anda
   
 
